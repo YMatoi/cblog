@@ -16,5 +16,5 @@
                  [honeysql "0.9.1"]
                  [org.clojure/java.jdbc "0.7.3"]
                  [org.postgresql/postgresql "42.1.4"]
-                 [ragtime "0.7.2"]
+                 [org.clojure/tools.namespace "0.2.11"]
                  [ragtime "0.7.2"]])

@@ -1,7 +1,7 @@
 (ns cblog.database
   (:require [com.stuartsierra.component :as component]))
 
-(defrecord Database [db-spec]
+(defrecord Database [db-spec connection]
   component/Lifecycle
   (start [this]
     (println ";; Starting Database")

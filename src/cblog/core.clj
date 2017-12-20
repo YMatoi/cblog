@@ -1,5 +1,6 @@
 (ns cblog.core
   (:require [com.stuartsierra.component :as component]
+            [clojure.tools.namespace.repl :refer (refresh)]
             [cblog.database :as database]
             [cblog.app :as app]
             [cblog.server :as server]))
@@ -11,13 +12,26 @@
      :db (database/map->Database {:db-spec db-spec})
      :app (app/map->App {})
      :server (component/using
-              (server/map->Server {:port port})
-              {:app :app}))))
+              (server/new-server port)
+              [:app]))))
 
-(def db-spec "postgresql://postgres:example@localhost:5432/postgres")
+(def system nil)
 
-(def system (create-system {:port 3000
-                            :db-spec db-spec}))
+(defn init []
+  (alter-var-root #'system
+                  (constantly (create-system {:port 3000
+                                              :db-spec "postgresql://postgres:example@localhost:5432/postgres"}))))
 
-(defn -main []
-  (component/start system))
+(defn start []
+  (alter-var-root #'system component/start))
+
+(defn stop []
+  (alter-var-root #'system (fn [s] (when s (component/stop s)))))
+
+(defn run []
+  (init)
+  (start))
+
+(defn reset []
+  (stop)
+  (refresh :after 'cblog.core/run))
