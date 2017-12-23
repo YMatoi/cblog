@@ -3,6 +3,7 @@
             [clojure.tools.namespace.repl :refer (refresh)]
             [cblog.database :as database]
             [cblog.app :as app]
+            [cblog.utils :as utils] 
             [cblog.server :as server]))
 
 (defn create-system [config-options]
@@ -17,6 +18,15 @@
               (server/map->Server {:port port})
               [:app]))))
 
+(def config-options
+  {:port 3000
+   :db-spec "postgresql://postgres:example@localhost:5432/postgres"})
+
+(defn migrate []
+  (utils/migrate (:db-spec config-options)))
+
+(defn rollback []
+  (utils/rollback (:db-spec config-options)))
+
 (defn -main []
-  (create-system {:port 3000
-                  :db-spec "postgresql://postgres:example@localhost:5432/postgres"}))
+  (create-system config-options))
