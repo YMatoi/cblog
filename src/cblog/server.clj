@@ -15,6 +15,3 @@
       (do (.stop s)
           (dissoc this :server))
       this)))
-
-(defn new-server [port]
-  (map->Server {:port port}))

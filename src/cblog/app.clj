@@ -1,30 +1,56 @@
 (ns cblog.app
   (:require [com.stuartsierra.component :as component]
-            [bidi.ring :refer [make-handler resources]]
+            [bidi.ring :refer [make-handler resources Ring]]
+            [bidi.bidi :as bidi]
             [ring.util.response :refer [response]]
-            [ring.middleware.json :refer [wrap-json-body wrap-json-response]]))
+            [hiccup2.core :as hiccup]
+            [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
+            [ring.middleware.params :refer [wrap-params]]
+            [cblog.utils :refer [defhandler ring-handler? ring-handlers]]
+            [cblog.user :as user]))
 
-(defn home [req]
-  (response {:json "test"}))
+(defhandler home [req]
+  (println (:database req))
+  (response (str (hiccup/html [:div#foo.bar.baz "bang"]))))
+
+(defhandler articles [req]
+  (response {:test "articles"}))
 
 (def routes
-  ["/" {:get home}])
+  ["/" {:get :home
+        "v1" {"/users" user/routes
+              "/articles" {:get :articles}}}])
 
-(def handler
-  (make-handler routes))
+(defn match-handler [k]
+  (->> (ring-handlers)
+       (filter #(= (:ring-handler (meta %))
+                   k))
+       first))
 
-(def app
-  (as-> handler $
+(extend-protocol Ring
+  clojure.lang.Keyword
+  (request [k req _]
+    (let [handler (match-handler k)]
+      (handler req))))
+
+(defn wrap-database [f database]
+  (fn [req]
+    (f (assoc req :database database))))
+
+(defn app [database]
+  (as-> (make-handler routes) $
+    (wrap-database $ database)
+    (wrap-params $)
     (wrap-json-body $)
     (wrap-json-response $)))
 
-(defrecord App []
+(defrecord App [database]
   component/Lifecycle
   (start [this]
     (println ";; Starting App")
     (if (:app this)
       this
-      (assoc this :app app)))
+      (assoc this :app (app database))))
   (stop [this]
     (println ";; Stopping App")
     (if-let [a (:app this)]
