@@ -41,7 +41,7 @@
   (as-> (make-handler routes) $
     (wrap-database $ database)
     (wrap-params $)
-    (wrap-json-body $)
+    (wrap-json-body $ {:keywords? true})
     (wrap-json-response $)))
 
 (defrecord App [database]
