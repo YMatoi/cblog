@@ -9,6 +9,7 @@
             [cblog.utils :refer [sha256 defhandler ring-handler? ring-handlers validate id-pattern]]
             [cblog.user :as user]
             [cblog.user-dao :as dao]
+            [cblog.article :as article]
             [cblog.response :as response]
             [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
             [clj-time.core :as time]
@@ -42,7 +43,8 @@
 (def routes
   ["/" {:get :home
         "login" {:post :login}
-        "v1" {"/users" user/routes}
+        "v1" {"/users" user/routes
+              "/articles" article/routes}
         true :not-found}])
 
 (defn match-handler [k]

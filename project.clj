@@ -17,6 +17,7 @@
                  [honeysql "0.9.1"]
                  [org.clojure/java.jdbc "0.7.3"]
                  [org.postgresql/postgresql "42.1.4"]
+                 [danlentz/clj-uuid "0.1.7"]
                  [ragtime "0.7.2"]]
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]]
