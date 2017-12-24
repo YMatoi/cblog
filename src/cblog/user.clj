@@ -1,8 +1,7 @@
 (ns cblog.user
-  (:require [cblog.utils :refer [defhandler]]
-            [clojure.java.jdbc :as jdbc]
-            [honeysql.core :as sql]
-            [ring.util.response :refer [response]]))
+  (:require [cblog.utils :refer [defhandler response validate sha256 id-pattern]]
+            [cblog.user-dao :as dao]
+            [struct.core :as s]))
 
 (def routes
   {:get :users-list
@@ -11,36 +10,63 @@
                :put :user-update
                :delete :user-delete}}})
 
-(defn create [database data]
-  (try (jdbc/insert! (:db-spec database) :users data)
-       (catch Exception e (.getMessage e))))
-
-(defn index [database]
-  (let [sql (sql/format {:select [:id :name]
-                         :from [:users]})]
-    (jdbc/query (:db-spec database) sql)))
+(def login-json
+  {:id [[s/required]
+        [id-pattern]
+        [s/max-count 64]]
+   :password [[s/required]
+              [s/min-count 8]
+              [s/max-count 256]]})
 
 (defhandler users-list [req]
-  (response (index (:database req))))
+  (response nil (dao/user-list (:database req)) 200))
+
+(def create-json
+  {:id [[s/required]
+        [id-pattern]
+        [s/max-count 64]]
+   :password [[s/required]
+              [s/min-count 8]
+              [s/max-count 256]]
+   :address [[s/required]
+             [s/max-count 256]
+             [s/email]]
+   :name [[s/required]
+          [s/max-count 64]]
+   :profile [[s/max-count 256]]})
+
+(def update-json
+  {:password [[s/min-count 8]
+              [s/max-count 256]]
+   :address [[s/max-count 256]
+             [s/email]]
+   :name [[s/max-count 64]]
+   :profile [[s/max-count 256]]})
 
 (defhandler user-create [req]
-  (let [{:keys [id name address password]} (get-in req [:body])
-        data {:id id :name name :address address :password password}]
-    (response (create (:database req) data))))
+  (let [[result validated] (validate (get-in req [:body]) create-json)]
+    (if (nil? result)
+      (let [created (dao/user-create
+                     (:database req)
+                     (assoc validated :password (sha256 (:password validated))))]
+        (if (nil? (:id (first created)))
+          (response {:id "already used"} (dissoc validated :password) 409)
+          (response nil nil  200)))
+      (response result (dissoc validated :password) 400))))
 
 (defhandler user-get [req]
   (let [id (get-in req [:params :id])]
-    (response {:user "get"
-               :id id})))
+    (if-let [data  (dao/user-get (:database req) id)]
+      (response nil data 200)
+      (response {:id "is not found"} nil 404))))
 
 (defhandler user-update [req]
   (let [id (get-in req [:params :id])
-        body (get-in req [:body])]
-    (response {:user "update"
-               :id id
-               :body body})))
+        data (get-in req [:body])]
+    (let [validated (validate data update-json)])))
 
 (defhandler user-delete [req]
-  (let [id (get-in req [:params :id])]
-    (response {:user "delete"
-               :id id})))
+  (if-let [id (get-in req [:params :id])]
+    (if (nil? (dao/user-get (:database req) id))
+      (response {:id "is not found"} nil 404)
+      (response nil (dao/user-delete (:database req) id) 200))))

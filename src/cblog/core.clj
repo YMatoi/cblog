@@ -3,7 +3,7 @@
             [clojure.tools.namespace.repl :refer (refresh)]
             [cblog.database :as database]
             [cblog.app :as app]
-            [cblog.utils :as utils] 
+            [cblog.utils :as utils]
             [cblog.server :as server]))
 
 (defn create-system [config-options]
