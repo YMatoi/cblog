@@ -2,13 +2,13 @@
   (:require [com.stuartsierra.component :as component]
             [bidi.ring :refer [make-handler resources Ring]]
             [bidi.bidi :as bidi]
-            [ring.util.response :refer [response status]]
             [hiccup2.core :as hiccup]
             [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
             [ring.middleware.params :refer [wrap-params]]
             [cblog.utils :refer [sha256 defhandler ring-handler? ring-handlers validate id-pattern]]
             [cblog.user :as user]
             [cblog.user-dao :as dao]
+            [cblog.response :as response]
             [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
             [clj-time.core :as time]
             [struct.core :as s]))
@@ -34,9 +34,9 @@
       (let [valid? (= (sha256 (:password validated))
                       (:password (dao/user-get (:database req) (:id validated))))]
         (if valid?
-          {:status 200 :body ((:encrypt req) (:id validated))}
-          (status (response nil) 400)))
-      (status (response nil) 400))))
+          (response/ok ((:encrypt req) (:id validated)))
+          (response/bad-request "authentication failed" nil)))
+      (response/bad-request "authentication failed" nil))))
 
 (def routes
   ["/" {:get :home

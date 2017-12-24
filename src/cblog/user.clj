@@ -49,17 +49,22 @@
 
 (defhandler user-get [req]
   (let [id (get-in req [:params :id])]
-    (if-let [data  (dao/user-get (:database req) id)]
-      (response/ok data)
+    (if-let [data (dao/user-get (:database req) id)]
+      (if (= (:user (:identity req)) id)
+        (response/ok (dissoc data :password)) ; 自分自身をgetした場合はaddressを表示する
+        (response/ok (dissoc data :address :password))) ; 他のユーザーをgetした場合はaddressを表示しない
       (response/not-found {:id "is not found"}))))
 
-(defhandler user-update [req]
+(defhandler user-update [req {:auth? true}]
   (let [id (get-in req [:params :id])
         data (get-in req [:body])]
-    (let [validated (validate data update-json)])))
+    (if (= (:identity req) id)
+      (let [validated (validate data update-json)]))))
 
-(defhandler user-delete [req]
+(defhandler user-delete [req {:auth? true}]
   (if-let [id (get-in req [:params :id])]
-    (if (nil? (dao/user-get (:database req) id))
-      (response/not-found {:id "is not found"})
-      (response/ok (dao/user-delete (:database req) id)))))
+    (if (= (:user (:identity req)) id)
+      (if (nil? (dao/user-get (:database req) id))
+        (response/not-found {:id "is not found"})
+        (response/ok (dao/user-delete (:database req) id)))
+      (response/bad-request "bad request" nil))))
