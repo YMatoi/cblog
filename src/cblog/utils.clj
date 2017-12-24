@@ -4,12 +4,17 @@
             [ring.util.response :as resp]
             [struct.core :as s]
             [buddy.core.hash :as hash]
+            [buddy.auth :refer [authenticated? throw-unauthorized]]
             [buddy.core.codecs :as codecs]))
 
-(defmacro defhandler [name args & body]
-  (let [req (gensym)]
-    `(defn ~(vary-meta name assoc :ring-handler (keyword name)) ~args
-       ~@body)))
+(defmacro defhandler [name [args options] & body]
+  (if-not (:auth? options)
+    `(defn ~(vary-meta name assoc :ring-handler (keyword name)) [~args]
+       ~@body)
+    `(defn ~(vary-meta name assoc :ring-handler (keyword name)) [~args]
+       (if-not (authenticated? ~args)
+         (throw-unauthorized)
+         (do ~@body)))))
 
 (defn response [error response status-code]
   (resp/status (resp/response {:error error

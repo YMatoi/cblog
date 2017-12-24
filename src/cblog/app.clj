@@ -9,23 +9,15 @@
             [cblog.utils :refer [sha256 defhandler ring-handler? ring-handlers validate id-pattern]]
             [cblog.user :as user]
             [cblog.user-dao :as dao]
-            [buddy.sign.jwt :as jwt]
-            [buddy.core.nonce :as nonce]
-            [buddy.auth :refer [authenticated? throw-unauthorized]]
-            [buddy.auth.backends.token :refer [jwe-backend]]
             [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
             [clj-time.core :as time]
             [struct.core :as s]))
 
-(defhandler home [req]
-  (if-not (authenticated? req)
-    (throw-unauthorized)
-    (response (str (hiccup/html [:div#foo.bar.baz "bang"])))))
+(defhandler home [req {:auth? true}]
+  (response (str (hiccup/html [:div#foo.bar.baz "bang"]))))
 
 (defhandler not-found [req]
   (status (response nil) 404))
-
-(def secret (nonce/random-bytes 32))
 
 (def login-json
   {:id [[s/required]
