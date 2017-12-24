@@ -37,19 +37,14 @@
 
 (defhandler login [req]
   (let [[result validated] (validate (get-in req [:body]) login-json)]
+    (println (:encrypt req))
     (if (nil? result)
       (let [valid? (= (sha256 (:password validated))
                       (:password (dao/user-get (:database req) (:id validated))))]
         (if valid?
-          (let [claims {:user (keyword (:id validated))
-                        :exp (time/plus (time/now) (time/seconds 3600))}
-                token (jwt/encrypt claims secret {:alg :a256kw :enc :a128gcm})]
-            {:status 200 :body {:token token}})
+          {:status 200 :body ((:encrypt req) (:id validated))}
           (status (response nil) 400)))
       (status (response nil) 400))))
-
-(def auth-backend (jwe-backend {:secret secret
-                                :options {:alg :a256kw :enc :a128gcm}}))
 
 (def routes
   ["/" {:get :home
@@ -73,22 +68,28 @@
   (fn [req]
     (f (assoc req :database database))))
 
-(defn app [database]
+(defn wrap-auth [f encrypt]
+  (fn [req]
+    (println encrypt)
+    (f (assoc req :encrypt encrypt))))
+
+(defn app [database auth]
   (as-> (make-handler routes) $
-    (wrap-authorization $ auth-backend)
-    (wrap-authentication $ auth-backend)
+    (wrap-auth $ (:encrypt auth))
+    (wrap-authorization $ (:auth-backend auth))
+    (wrap-authentication $ (:auth-backend auth))
     (wrap-database $ database)
     (wrap-params $)
     (wrap-json-body $ {:keywords? true})
     (wrap-json-response $)))
 
-(defrecord App [database]
+(defrecord App [database auth]
   component/Lifecycle
   (start [this]
     (println ";; Starting App")
     (if (:app this)
       this
-      (assoc this :app (app database))))
+      (assoc this :app (app database auth))))
   (stop [this]
     (println ";; Stopping App")
     (if-let [a (:app this)]

@@ -3,6 +3,7 @@
             [clojure.tools.namespace.repl :refer (refresh)]
             [cblog.database :as database]
             [cblog.app :as app]
+            [cblog.auth :as auth]
             [cblog.utils :as utils]
             [cblog.server :as server]))
 
@@ -11,9 +12,10 @@
     (println port db-spec)
     (component/system-map
      :database (database/map->Database {:db-spec db-spec})
+     :auth (auth/map->Auth {})
      :app (component/using
            (app/map->App {})
-           [:database])
+           [:database :auth])
      :server (component/using
               (server/map->Server {:port port})
               [:app]))))

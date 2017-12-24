@@ -7,13 +7,9 @@
             [buddy.core.codecs :as codecs]))
 
 (defmacro defhandler [name args & body]
-  (let [msg (gensym)]
+  (let [req (gensym)]
     `(defn ~(vary-meta name assoc :ring-handler (keyword name)) ~args
-       (try
-         ~@body
-         (catch Exception ~msg
-           (println (str "caught exception: " (.getMessage ~msg)))
-           (resp/status {} 500))))))
+       ~@body)))
 
 (defn response [error response status-code]
   (resp/status (resp/response {:error error
