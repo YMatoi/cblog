@@ -5,6 +5,7 @@
             [hiccup2.core :as hiccup]
             [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
             [ring.middleware.params :refer [wrap-params]]
+            [ring.util.response :refer [response]]
             [cblog.utils :refer [sha256 defhandler ring-handler? ring-handlers validate id-pattern]]
             [cblog.user :as user]
             [cblog.user-dao :as dao]
@@ -17,7 +18,7 @@
   (response (str (hiccup/html [:div#foo.bar.baz "bang"]))))
 
 (defhandler not-found [req]
-  (status (response nil) 404))
+  (response/not-found "path is not found"))
 
 (def login-json
   {:id [[s/required]

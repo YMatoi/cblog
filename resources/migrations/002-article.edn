@@ -1,2 +1,8 @@
-{:up ["CREATE TABLE articles (id integer primary key not null, user_id varchar(64) references users(id) not null, title varchar(64) not null, body text not null, created_at timestamp not null, updated_at timestamp not null);"]
+{:up ["CREATE TABLE articles (
+      id uuid primary key not null, 
+      user_id varchar(64) references users(id) not null, 
+      title varchar(64) not null, 
+      body text not null, 
+      created_at timestamp not null,
+      updated_at timestamp not null);"]
  :down ["DROP TABLE articles;"]}
