@@ -16,10 +16,6 @@
          (throw-unauthorized)
          (do ~@body)))))
 
-(defn response [error response status-code]
-  (resp/status (resp/response {:error error
-                               :response response}) status-code))
-
 (def id-pattern
   {:message "only letters (a-z or A-Z), numbers (0-9)"
    :optional true
