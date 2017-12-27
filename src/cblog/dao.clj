@@ -73,3 +73,9 @@
 (gen-dao-get :articles :*)
 (gen-dao-update :articles)
 (gen-dao-delete :articles)
+
+(gen-dao-list :comments :*)
+(gen-dao-create :comments)
+(gen-dao-get :comments :*)
+(gen-dao-update :comments)
+(gen-dao-delete :comments)

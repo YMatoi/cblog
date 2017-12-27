@@ -3,6 +3,7 @@
             [bidi.ring :refer [make-handler resources Ring]]
             [bidi.bidi :as bidi]
             [hiccup2.core :as hiccup]
+            [hiccup.page :as page]
             [ring.middleware.json :refer [wrap-json-body wrap-json-response]]
             [ring.middleware.params :refer [wrap-params]]
             [ring.util.response :refer [response]]
@@ -13,10 +14,12 @@
             [cblog.response :as response]
             [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
             [clj-time.core :as time]
+            [bidi.ring :refer [resources]]
             [struct.core :as s]))
 
-(defhandler home [req {:auth? true}]
-  (response (str (hiccup/html [:div#foo.bar.baz "bang"]))))
+(defhandler home [req {:auth? false}]
+  (response (str (hiccup/html [:head (page/include-css "/public/css/main.css")]
+                              [:h1 "bang"]))))
 
 (defhandler not-found [req]
   (response/not-found "path is not found"))
@@ -45,6 +48,7 @@
         "login" {:post :login}
         "v1" {"/users" user/routes
               "/articles" article/routes}
+        "public" (resources {:prefix "public"})
         true :not-found}])
 
 (defn match-handler [k]
