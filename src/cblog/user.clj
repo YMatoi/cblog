@@ -1,7 +1,7 @@
 (ns cblog.user
   (:require [cblog.utils :refer [defhandler validate sha256 id-pattern]]
             [cblog.response :as response]
-            [cblog.user-dao :as dao]
+            [cblog.dao :as dao]
             [struct.core :as s]))
 
 (def routes
@@ -34,12 +34,12 @@
    :profile [[s/max-count 256]]})
 
 (defhandler users-list [req]
-  (response/ok (dao/user-list (:database req))))
+  (response/ok (dao/users-list (:database req))))
 
 (defhandler user-create [req]
   (let [[result validated] (validate (get-in req [:body]) create-json)]
     (if (nil? result)
-      (let [created (dao/user-create
+      (let [created (dao/users-create
                      (:database req)
                      (assoc validated :password (sha256 (:password validated))))]
         (if (nil? (:id (first created)))
@@ -49,7 +49,7 @@
 
 (defhandler user-get [req]
   (let [id (get-in req [:params :id])]
-    (if-let [data (dao/user-get (:database req) id)]
+    (if-let [data (dao/users-get (:database req) id)]
       (if (= (:user (:identity req)) id)
         (response/ok (dissoc data :password)) ; 自分自身をgetした場合はaddressを表示する
         (response/ok (dissoc data :address :password))) ; 他のユーザーをgetした場合はaddressを表示しない
@@ -64,7 +64,7 @@
 (defhandler user-delete [req {:auth? true}]
   (if-let [id (get-in req [:params :id])]
     (if (= (:user (:identity req)) id)
-      (if (nil? (dao/user-get (:database req) id))
+      (if (nil? (dao/users-get (:database req) id))
         (response/not-found {:id "is not found"})
-        (response/ok (dao/user-delete (:database req) id)))
+        (response/ok (dao/users-delete (:database req) id)))
       (response/bad-request "bad request" nil))))

@@ -1,7 +1,7 @@
 (ns cblog.article
   (:require [cblog.utils :refer [defhandler validate]]
             [cblog.response :as response]
-            [cblog.article-dao :as dao]
+            [cblog.dao :as dao]
             [struct.core :as s]
             [clj-time.core :as time]
             [clj-time.coerce :as coerce]
@@ -21,7 +21,7 @@
           [s/max-count 10000]]})
 
 (defhandler articles-list [req]
-  (response/ok (dao/article-list (:database req))))
+  (response/ok (dao/articles-list (:database req))))
 
 (defhandler article-create [req {:auth? true}]
   (if-let [user-id (:user (:identity req))]
@@ -29,13 +29,13 @@
       (if (nil? result)
         (let [id (uuid/v1)
               created_at (coerce/to-long (time/now))
-              created (dao/article-create (:database req)
-                                          {:id id
-                                           :user_id user-id
-                                           :title (:title validated)
-                                           :body (:body validated)
-                                           :created_at created_at
-                                           :updated_at created_at})]
+              created (dao/articles-create (:database req)
+                                           {:id id
+                                            :user_id user-id
+                                            :title (:title validated)
+                                            :body (:body validated)
+                                            :created_at created_at
+                                            :updated_at created_at})]
           (if-let [data created]
             (response/ok data)
             (response/bad-request "bad request" nil)))
@@ -48,12 +48,12 @@
       (let [[result validated] (validate (get-in req [:body]) article-json)]
         (if (nil? result)
           (let [updated_at (coerce/to-long (time/now))
-                created (dao/article-update (:database req)
-                                            {:id id
-                                             :title (:title validated)
-                                             :body (:body validated)
-                                             :updated_at updated_at})]
-            (if-let [data (dao/article-get (:database req) id)]
+                created (dao/articles-update (:database req)
+                                             {:id id
+                                              :title (:title validated)
+                                              :body (:body validated)
+                                              :updated_at updated_at})]
+            (if-let [data (dao/articles-get (:database req) id)]
               (response/ok data)
               (response/bad-request "bad request" nil)))
           (response/bad-request result validated)))
@@ -61,13 +61,13 @@
 
 (defhandler article-get [req]
   (let [id (get-in req [:params :id])]
-    (if-let [data (dao/article-get (:database req) id)]
+    (if-let [data (dao/articles-get (:database req) id)]
       (response/ok data)
       (response/not-found {:id "is not found"}))))
 
 (defhandler article-delete [req {:auth? true}]
   (if-let [id (get-in req [:params :id])]
     (if (= (:user (:identity req))
-           (:user_id (dao/article-get (:database req) id)))
-      (response/ok (dao/article-delete (:database req) id))
+           (:user_id (dao/articles-get (:database req) id)))
+      (response/ok (dao/articles-delete (:database req) id))
       (response/bad-request "bad request" nil))))

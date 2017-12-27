@@ -8,7 +8,7 @@
             [ring.util.response :refer [response]]
             [cblog.utils :refer [sha256 defhandler ring-handler? ring-handlers validate id-pattern]]
             [cblog.user :as user]
-            [cblog.user-dao :as dao]
+            [cblog.dao :as dao]
             [cblog.article :as article]
             [cblog.response :as response]
             [buddy.auth.middleware :refer [wrap-authentication wrap-authorization]]
@@ -34,7 +34,7 @@
     (println (:encrypt req))
     (if (nil? result)
       (let [valid? (= (sha256 (:password validated))
-                      (:password (dao/user-get (:database req) (:id validated))))]
+                      (:password (dao/users-get (:database req) (:id validated))))]
         (if valid?
           (response/ok ((:encrypt req) (:id validated)))
           (response/bad-request "authentication failed" nil)))
