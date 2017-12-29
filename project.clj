@@ -19,6 +19,17 @@
                  [org.postgresql/postgresql "42.1.4"]
                  [danlentz/clj-uuid "0.1.7"]
                  [ragtime "0.7.2"]]
+  :plugins [[lein-cljsbuild "1.1.7"]]
+  :clean-targets ^{:protect false} [:target-path :compile-path "resources/public/js"]
+  :cljsbuild {:builds [{:source-paths ["src-cljs"]
+                        :compiler
+                        {:main "main.core"
+                         :asset-path "public/js"
+                         :output-to "resources/public/js/main.js"
+                         :output-dir "resources/public/js"
+                         :source-map true
+                         :optimizations :none
+                         :pretty-print true}}]}
   :profiles
   {:dev {:dependencies [[org.clojure/tools.namespace "0.2.11"]]
          :source-paths ["dev"]}})

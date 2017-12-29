@@ -18,7 +18,8 @@
             [struct.core :as s]))
 
 (defhandler home [req {:auth? false}]
-  (response (str (hiccup/html [:head (page/include-css "/public/css/main.css")]
+  (response (str (hiccup/html [:head (page/include-css "/public/css/main.css")
+                               (page/include-js "/public/js/main.js")]
                               [:h1 "bang"]))))
 
 (defhandler not-found [req]
