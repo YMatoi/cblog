@@ -35,7 +35,6 @@
 
 (defhandler login [req]
   (let [[result validated] (validate (get-in req [:body]) login-json)]
-    (println (:encrypt req))
     (if (nil? result)
       (let [valid? (= (sha256 (:password validated))
                       (:password (dao/users-get (:database req) (:id validated))))]
@@ -70,7 +69,6 @@
 
 (defn wrap-auth [f encrypt]
   (fn [req]
-    (println encrypt)
     (f (assoc req :encrypt encrypt))))
 
 (defn app [database auth]
