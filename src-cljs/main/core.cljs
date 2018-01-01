@@ -20,8 +20,9 @@
         "signout" :signout ; ログアウト
         "signup" :signup ; 登録
         "articles" {"" :articles ; 記事一覧
-                    ["/" :id] :article-view
-                    ["/" :id "/edit"] :article-update}
+                    ["/id-" :id] :article-view
+                    ["/id-" :id "/edit"] :article-update
+                    "/create" :article-create}
         "users" {"" :users
                  ["/" :id] :user-view}}]) ;ユーザー記事一覧 
 
@@ -47,21 +48,20 @@
         error (reagent/atom "")]
     (fn []
       [:div.form
-        [ui/text-field {:hint-text "UserID"
+        [ui/text-field {:floating-label-text "UserID"
                         :on-change #(swap! input assoc :id %2)
                         :error-text @error}]
-        [ui/text-field {:hint-text "Password"
+        [ui/text-field {:floating-label-text "Password"
                         :type "password"
                         :on-change #(swap! input assoc :password %2)
                         :error-text @error}]
         [ui/flat-button {:label "SignIn"
-                         :onClick #(go 
-                                     (let [response (<! (http/post "/v1/login" {:json-params @input}))
-                                           status (:status response)]
-                                       (cond
-                                         (= 200 status) (set-login-info @user-id (get-in response [:body :response])) 
-                                         (= 400 status) (reset! error (get-in response [:body :errors]))
-                                         :else (do (println "hoge") (reset! error "Unknown Error")))))}]])))
+                         :on-click #(go (let [response (<! (http/post "/v1/login" {:json-params @input}))
+                                              status (:status response)]
+                                          (cond
+                                            (= 200 status) (set-login-info (:id @input) (get-in response [:body :response])) 
+                                            (= 400 status) (reset! error (get-in response [:body :errors]))
+                                            :else (do (println "hoge") (reset! error "Unknown Error")))))}]])))
 
 
 (defmethod page-contents :signup []
@@ -69,31 +69,31 @@
         errors (reagent/atom {})]
     (fn []
       [:div.form
-       [ui/text-field {:hint-text "UserID"
+       [ui/text-field {:floating-label-text "UserID"
                        :on-change #(swap! input assoc :id %2)
                        :error-text (:id @errors)}]
-       [ui/text-field {:hint-text "UserName"
+       [ui/text-field {:floating-label-text "UserName"
                        :on-change #(swap! input assoc :name %2)
                        :error-text (:name @errors)}]
-       [ui/text-field {:hint-text "EMail Address"
+       [ui/text-field {:floating-label-text "EMail Address"
                        :on-change #(swap! input assoc :address %2)
                        :type "email"
                        :error-text (:address @errors)}]
-       [ui/text-field {:hint-text "Password"
+       [ui/text-field {:floating-label-text "Password"
                        :on-change #(swap! input assoc :password %2)
                        :type "password"
                        :error-text (:password @errors)}]
-       [ui/text-field {:hint-text "Profile"
+       [ui/text-field {:floating-label-text "Profile"
                        :on-change #(swap! input assoc :profile  %2)
                        :error-text (:profile @errors)
-                       :multiLine true}]
+                       :multi-line true}]
        [ui/flat-button {:label "SignUp"
-                        :onClick #(go (let [response (<! (http/post "/v1/users" {:json-params @input}))
-                                            status (:status response)]
-                                        (println response)
-                                        (cond
-                                          (= 200 status) (set! (.-location js/document) (bidi/path-for app-routes :signin))
-                                          (or (= 400 status) (= 409 status)) (reset! errors (get-in response [:body :errors])))))}]])))
+                        :on-click #(go (let [response (<! (http/post "/v1/users" {:json-params @input}))
+                                             status (:status response)]
+                                         (println response)
+                                         (cond
+                                           (= 200 status) (set! (.-location js/document) (bidi/path-for app-routes :signin))
+                                           (or (= 400 status) (= 409 status)) (reset! errors (get-in response [:body :errors])))))}]])))
 
 (defmethod page-contents :signout []
   (unset-login-info)
@@ -116,9 +116,6 @@
   (let [routing-data (session/get :route)
         item (get-in routing-data [:route-params :id])
         article (reagent/atom [:div.article])]
-    (println routing-data)
-    (println item)
-    (println article)
     (fn []
       (when (<= (count @article) 1)
         (go (let [response (<! (http/get (str "/v1/articles/" item)))
@@ -131,6 +128,58 @@
                                                    [ui/card-text (:body body)]])
                 :else (do (reset! article [:div "Unknown Error"]))))))
       @article)))
+
+(defn article-update [title body item]
+  (let [input (reagent/atom {:title body :body body})
+        errors (reagent/atom)]
+    (fn []
+      [:div.form
+       [ui/text-field {:floating-label-text "Title"
+                       :default-value title
+                       :on-change #(swap! input assoc :title %2)}]
+       [ui/text-field {:floating-label-text "Body"
+                       :default-value body
+                       :multi-line true
+                       :on-change #(swap! input assoc :body %2)}]
+       [ui/flat-button {:label "Update"
+                        :on-click #(go (let [response (<! (http/put (str "/v1/articles/" item) {:json-params @input
+                                                                                                :headers {"Authorization" (str "Token " (:token @prefs))}}))
+                                             status (:status response)]
+                                         (cond
+                                           (= 200 status) (set! (.-location js/document) (bidi/path-for app-routes :article-view :id item))
+                                           (= 400 status) (reset! errors (get-in response [:body :errors])))))}]])))
+
+(defmethod page-contents :article-update []
+  (let [routing-data (session/get :route)
+        item (get-in routing-data [:route-params :id])
+        update-form (reagent/atom [:div])]
+    (fn []
+      (go (let [response (<! (http/get (str "/v1/articles/" item)))
+                status (:status response)
+                title (get-in response [:body :response :title])
+                body (get-in response [:body :response :body])]
+            (reset! update-form (article-update title body item))))
+      @update-form)))
+
+(defmethod page-contents :article-create []
+  (let [input (reagent/atom {})
+        errors (reagent/atom {})]
+    (fn []
+      [:div.form
+       [ui/text-field {:floating-label-text "Title"
+                       :on-change #(swap! input assoc :title %2)
+                       :error-text (:title errors)}]
+       [ui/text-field {:floating-label-text "Body"
+                       :on-change #(swap! input assoc :body %2)
+                       :error-text (:body errors)
+                       :multi-line true}]
+       [ui/flat-button {:label "Post"
+                        :on-click #(go (let [response (<! (http/post "/v1/articles" {:json-params @input
+                                                                                     :headers {"Authorization" (str "Token " (:token @prefs))}}))
+                                             status (:status response)]
+                                        (cond
+                                          (= 200 status) (set! (.-location js/document) (bidi/path-for app-routes :article-view :id (get-in response [:body :response 0 :id])))
+                                          (= 400 status) (reset! errors (get-in response [:body :errors])))))}]]))) 
 
 (defmethod page-contents :users []
   (fn []
