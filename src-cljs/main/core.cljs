@@ -51,10 +51,12 @@
         [ui/text-field {:floating-label-text "UserID"
                         :on-change #(swap! input assoc :id %2)
                         :error-text @error}]
+        [:br]
         [ui/text-field {:floating-label-text "Password"
                         :type "password"
                         :on-change #(swap! input assoc :password %2)
                         :error-text @error}]
+        [:br]
         [ui/flat-button {:label "SignIn"
                          :on-click #(go (let [response (<! (http/post "/v1/login" {:json-params @input}))
                                               status (:status response)]
@@ -72,21 +74,26 @@
        [ui/text-field {:floating-label-text "UserID"
                        :on-change #(swap! input assoc :id %2)
                        :error-text (:id @errors)}]
+       [:br]
        [ui/text-field {:floating-label-text "UserName"
                        :on-change #(swap! input assoc :name %2)
                        :error-text (:name @errors)}]
+       [:br]
        [ui/text-field {:floating-label-text "EMail Address"
                        :on-change #(swap! input assoc :address %2)
                        :type "email"
                        :error-text (:address @errors)}]
+       [:br]
        [ui/text-field {:floating-label-text "Password"
                        :on-change #(swap! input assoc :password %2)
                        :type "password"
                        :error-text (:password @errors)}]
+       [:br]
        [ui/text-field {:floating-label-text "Profile"
                        :on-change #(swap! input assoc :profile  %2)
                        :error-text (:profile @errors)
                        :multi-line true}]
+       [:br]
        [ui/flat-button {:label "SignUp"
                         :on-click #(go (let [response (<! (http/post "/v1/users" {:json-params @input}))
                                              status (:status response)]
@@ -100,7 +107,7 @@
   (set! (.-location js/document) (bidi/path-for app-routes :index)))
 
 (defmethod page-contents :articles []
-  (let [articles (reagent/atom [:div.articles])]
+  (let [articles (reagent/atom [:div.form])]
     (fn []
       (when (<= (count @articles) 1)
         (go (let [response (<! (http/get "/v1/articles"))
@@ -115,7 +122,7 @@
 (defmethod page-contents :article-view []
   (let [routing-data (session/get :route)
         item (get-in routing-data [:route-params :id])
-        article (reagent/atom [:div.article])]
+        article (reagent/atom [:div.form])]
     (fn []
       (when (<= (count @article) 1)
         (go (let [response (<! (http/get (str "/v1/articles/" item)))
@@ -137,10 +144,12 @@
        [ui/text-field {:floating-label-text "Title"
                        :default-value title
                        :on-change #(swap! input assoc :title %2)}]
+       [:br]
        [ui/text-field {:floating-label-text "Body"
                        :default-value body
                        :multi-line true
                        :on-change #(swap! input assoc :body %2)}]
+       [:br]
        [ui/flat-button {:label "Update"
                         :on-click #(go (let [response (<! (http/put (str "/v1/articles/" item) {:json-params @input
                                                                                                 :headers {"Authorization" (str "Token " (:token @prefs))}}))
@@ -169,10 +178,12 @@
        [ui/text-field {:floating-label-text "Title"
                        :on-change #(swap! input assoc :title %2)
                        :error-text (:title errors)}]
+       [:br]
        [ui/text-field {:floating-label-text "Body"
                        :on-change #(swap! input assoc :body %2)
                        :error-text (:body errors)
                        :multi-line true}]
+       [:br]
        [ui/flat-button {:label "Post"
                         :on-click #(go (let [response (<! (http/post "/v1/articles" {:json-params @input
                                                                                      :headers {"Authorization" (str "Token " (:token @prefs))}}))
