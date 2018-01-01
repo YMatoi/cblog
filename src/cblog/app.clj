@@ -20,10 +20,7 @@
 (defhandler home [req {:auth? false}]
   (response (str (hiccup/html [:head (page/include-css "/public/css/main.css")
                                (page/include-js "/public/js/main.js")]
-                              [:h1 "bang"]))))
-
-(defhandler not-found [req]
-  (response/not-found "path is not found"))
+                              [:div#app]))))
 
 (def login-json
   {:id [[s/required]
@@ -44,12 +41,11 @@
       (response/bad-request "authentication failed" nil))))
 
 (def routes
-  ["/" {:get :home
-        "login" {:post :login}
-        "v1" {"/users" user/routes
-              "/articles" article/routes}
+  ["/" {"v1" {"/users" user/routes
+              "/articles" article/routes
+              "/login" {:post :login}}
         "public" (resources {:prefix "public"})
-        true :not-found}])
+        true :home}])
 
 (defn match-handler [k]
   (->> (ring-handlers)

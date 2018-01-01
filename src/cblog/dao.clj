@@ -68,7 +68,7 @@
 (gen-dao-get :users :id :name :profile :address :password)
 (gen-dao-delete :users)
 
-(gen-dao-list :articles :id :user_id :title :created_at :updated_at)
+(gen-dao-list :articles :*)
 (gen-dao-create :articles)
 (gen-dao-get :articles :*)
 (gen-dao-update :articles)

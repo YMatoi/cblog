@@ -18,13 +18,19 @@
                  [org.clojure/java.jdbc "0.7.3"]
                  [org.postgresql/postgresql "42.1.4"]
                  [danlentz/clj-uuid "0.1.7"]
-                 [ragtime "0.7.2"]]
+                 [ragtime "0.7.2"]
+                 [reagent "0.8.0-alpha2"]
+                 [cljs-react-material-ui "0.2.48"]
+                 [reagent-utils "0.2.1"]
+                 [alandipert/storage-atom "2.0.1"]
+                 [venantius/accountant "0.2.3"]
+                 [cljs-http "0.1.44"]]
   :plugins [[lein-cljsbuild "1.1.7"]]
   :clean-targets ^{:protect false} [:target-path :compile-path "resources/public/js"]
   :cljsbuild {:builds [{:source-paths ["src-cljs"]
                         :compiler
                         {:main "main.core"
-                         :asset-path "public/js"
+                         :asset-path "/public/js"
                          :output-to "resources/public/js/main.js"
                          :output-dir "resources/public/js"
                          :source-map true
