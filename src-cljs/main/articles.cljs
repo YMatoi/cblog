@@ -19,5 +19,11 @@
                                       [ui/card
                                        [ui/card-header {:title (:title article)
                                                         :subtitle (:user_id article)}]]])))))
-      @articles)))
+      [:div
+       (if (nil? (storage/get-token))
+         [:div]
+         [ui/flat-button {:label "Create"
+                          :primary true
+                          :href (bidi/path-for app-routes :article-create)}])
+       @articles])))
 

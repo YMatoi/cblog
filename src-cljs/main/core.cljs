@@ -81,14 +81,16 @@
 (defn right-menu []
   (if-let [user-id (storage/get-user-id)]
     [:div 
-     [:span user-id]
-     [:a {:href (bidi/path-for app-routes :signout)}
-      [ui/flat-button "SignOut"]]]
+      [ui/raised-button {:label "SignOut"
+                         :secondary true
+                         :href (bidi/path-for app-routes :signout)}]]
     [:div
-     [:a {:href (bidi/path-for app-routes :signin)}
-      [ui/flat-button "SignIn"]]
-     [:a {:href (bidi/path-for app-routes :signup)}
-      [ui/flat-button "SignUp"]]]))
+      [ui/raised-button {:label "SignIn"
+                         :primary true
+                         :href (bidi/path-for app-routes :signin)}]
+      [ui/raised-button {:label "SignUp"
+                         :secondary true
+                         :href (bidi/path-for app-routes :signup)}]]))
 
 (defn page []
   (fn []
@@ -96,8 +98,12 @@
       [ui/mui-theme-provider
        {:mui-theme (get-mui-theme)}
        [:div
-        [ui/app-bar {:title page
-                     :iconElementRight (reagent/as-element [right-menu])}] 
+        [ui/app-bar {:title (storage/get-user-id)
+                     :class-name "header"
+                     :icon-element-left (reagent/as-element [ui/icon-button {:tooltip "Home" :href (bidi/path-for app-routes :index)} (ic/action-home)])
+                     :icon-element-right (reagent/as-element [right-menu])
+                     :icon-style-right {:margin-top "auto"
+                                        :margin-bottom "auto"}}]
         [:div.contents
          ^{:key page} [page-contents page]]]])))
 
