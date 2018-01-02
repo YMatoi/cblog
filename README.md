@@ -4,7 +4,10 @@ A Clojure library designed to ... well, that part is up to you.
 
 ## Usage
 
-FIXME
+```
+docker-compose up -d
+```
+access localhost:8080
 
 ## License
 
