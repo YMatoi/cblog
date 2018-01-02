@@ -34,7 +34,7 @@
    :profile [[s/max-count 256]]})
 
 (defhandler users-list [req]
-  (response/ok (dao/users-list (:database req))))
+  (response/ok (dao/users-list (:database req) nil)))
 
 (defhandler user-create [req]
   (let [[result validated] (validate (get-in req [:body]) create-json)]

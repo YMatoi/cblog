@@ -2,6 +2,7 @@
   (:require [cblog.utils :refer [defhandler validate]]
             [cblog.response :as response]
             [cblog.dao :as dao]
+            [cblog.comment :as comment]
             [struct.core :as s]
             [clj-time.core :as time]
             [clj-time.coerce :as coerce]
@@ -12,7 +13,8 @@
    :post :article-create
    "/" {[:id] {:get :article-get
                :put :article-update
-               :delete :article-delete}}})
+               :delete :article-delete
+               "/comments" comment/routes}}})
 
 (def article-json
   {:title [[s/required]
@@ -21,7 +23,7 @@
           [s/max-count 10000]]})
 
 (defhandler articles-list [req]
-  (response/ok (dao/articles-list (:database req))))
+  (response/ok (dao/articles-list (:database req) nil)))
 
 (defhandler article-create [req {:auth? true}]
   (if-let [user-id (:user (:identity req))]

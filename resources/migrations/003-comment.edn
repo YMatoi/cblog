@@ -2,8 +2,8 @@
       id varchar(36) primary key not null,
       user_id varchar(64) references users(id),
       article_id varchar(36) references articles(id) not null,
-      parent_id varchar(36) references comments(id),
+      parent_id varchar(36),
       body text not null,
-      create_at bigint not null,
+      created_at bigint not null,
       updated_at bigint not null);"]
  :down ["drop table comments"]}

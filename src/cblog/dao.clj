@@ -9,10 +9,12 @@
 (defmacro gen-dao-list [table-name & columns]
   (let [fn-list (create-function-name table-name "-list")
         database (gensym)
+        where (gensym)
         sql (gensym)]
-    `(defn ~fn-list [~database]
+    `(defn ~fn-list [~database ~where]
        (let [~sql (-> (helpers/select ~@columns)
                       (helpers/from ~table-name)
+                      (helpers/where ~where)
                       sql/format)]
          (println ~sql)
          (jdbc/query (:db-spec ~database) ~sql)))))

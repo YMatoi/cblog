@@ -39,9 +39,7 @@
 (defmulti page-contents identity)
 
 (defmethod page-contents :index []
-  (fn []
-    [:span
-     [:h1 "index"]]))
+  (set! (.-location js/document) (bidi/path-for app-routes :articles)))
 
 (defmethod page-contents :signin []
   (let [input (reagent/atom {})
@@ -63,7 +61,9 @@
                          :on-click #(go (let [response (<! (http/post "/v1/login" {:json-params @input}))
                                               status (:status response)]
                                           (cond
-                                            (= 200 status) (set-login-info (:id @input) (get-in response [:body :response])) 
+                                            (= 200 status) (do 
+                                                             (set-login-info (:id @input) (get-in response [:body :response]))
+                                                             (set! (.-location js/document) (bidi/path-for app-routes :articles)))
                                             (= 400 status) (reset! error (get-in response [:body :errors]))
                                             :else (do (println "hoge") (reset! error "Unknown Error")))))}]])))
 
@@ -140,10 +140,16 @@
                   status (:status response)
                   body (get-in response [:body :response])]
               (cond
-                (= 200 status) (swap! article conj [ui/card 
-                                                   [ui/card-header {:title (:title body)
-                                                                   :subtitle (:user_id body)}]
-                                                   [ui/card-text [article-body (:body body)]]])
+                (= 200 status) (do (swap! article conj [ui/card 
+                                                        [ui/card-header {:title (:title body)
+                                                                         :subtitle (:user_id body)}]
+                                                        [ui/card-text [article-body (:body body)]]])
+                                   (when (= (:user-id @prefs) (:user_id body))
+                                     (swap! article conj [ui/flat-button {:label "Delete" :secondary true
+                                                                          :on-click #(go (let [response (<! (http/delete (str "/v1/articles/" item) {:headers {"Authorization" (str "Token " (:token @prefs))}}))]
+                                                                                           (set! (.-location js/document) (bidi/path-for app-routes :articles))))}])
+                                     (swap! article conj [ui/flat-button {:label "Edit"
+                                                                          :href (bidi/path-for app-routes :article-update :id item)}])))
                 :else (do (reset! article [:div "Unknown Error"]))))))
       @article)))
 
