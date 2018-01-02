@@ -99,6 +99,9 @@
        {:mui-theme (get-mui-theme)}
        [:div
         [ui/app-bar {:title (storage/get-user-id)
+                     :style {:max-width "800px"
+                             :margin-left "auto"
+                             :margin-right "auto"}
                      :class-name "header"
                      :icon-element-left (reagent/as-element [ui/icon-button {:tooltip "Home" :href (bidi/path-for app-routes :index)} (ic/action-home)])
                      :icon-element-right (reagent/as-element [right-menu])
