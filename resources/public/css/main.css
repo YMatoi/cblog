@@ -4,7 +4,8 @@ body {
   height: 100%;
 }
 
-div.form {
-  width: 256px;
-  margin: auto;
+div.contents {
+  max-width: 800px;
+  margin: 20px auto;
 }
+

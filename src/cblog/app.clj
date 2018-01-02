@@ -18,8 +18,8 @@
             [struct.core :as s]))
 
 (defhandler home [req {:auth? false}]
-  (response (str (hiccup/html [:head (page/include-css "/public/css/main.css")
-                               (page/include-js "/public/js/main.js")]
+  (response (str (hiccup/html [:head (page/include-js "/public/js/main.js")
+                               (page/include-css "/public/css/main.css")]
                               [:div#app]))))
 
 (def login-json

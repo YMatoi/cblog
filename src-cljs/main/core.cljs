@@ -47,7 +47,9 @@
   (let [input (reagent/atom {})
         error (reagent/atom "")]
     (fn []
-      [:div.form
+      [ui/paper {:style {:width "276px"
+                         :margin "auto"
+                         :padding "10px"}}
         [ui/text-field {:floating-label-text "UserID"
                         :on-change #(swap! input assoc :id %2)
                         :error-text @error}]
@@ -70,7 +72,9 @@
   (let [input (reagent/atom {})
         errors (reagent/atom {})]
     (fn []
-      [:div.form
+      [ui/paper {:style {:width "276px"
+                         :margin "auto"
+                         :padding "10px"}}
        [ui/text-field {:floating-label-text "UserID"
                        :on-change #(swap! input assoc :id %2)
                        :error-text (:id @errors)}]
@@ -107,7 +111,7 @@
   (set! (.-location js/document) (bidi/path-for app-routes :index)))
 
 (defmethod page-contents :articles []
-  (let [articles (reagent/atom [:div.form])]
+  (let [articles (reagent/atom [:div.article])]
     (fn []
       (when (<= (count @articles) 1)
         (go (let [response (<! (http/get "/v1/articles"))
@@ -119,10 +123,17 @@
                                                         :subtitle (:user_id article)}]]])))))
       @articles)))
 
+(defn article-body [body]
+  (let [html (reagent/atom [:div])]
+    (fn []
+      (doseq [line (clojure.string/split-lines body)]
+        (swap! html conj [:p line]))
+      @html))) 
+
 (defmethod page-contents :article-view []
   (let [routing-data (session/get :route)
         item (get-in routing-data [:route-params :id])
-        article (reagent/atom [:div.form])]
+        article (reagent/atom [:div.article])]
     (fn []
       (when (<= (count @article) 1)
         (go (let [response (<! (http/get (str "/v1/articles/" item)))
@@ -132,21 +143,23 @@
                 (= 200 status) (swap! article conj [ui/card 
                                                    [ui/card-header {:title (:title body)
                                                                    :subtitle (:user_id body)}]
-                                                   [ui/card-text (:body body)]])
+                                                   [ui/card-text [article-body (:body body)]]])
                 :else (do (reset! article [:div "Unknown Error"]))))))
       @article)))
 
 (defn article-update [title body item]
   (let [input (reagent/atom {:title body :body body})
-        errors (reagent/atom)]
+        errors (reagent/atom {})]
     (fn []
-      [:div.form
+      [ui/paper {:style {:padding "10px"}}
        [ui/text-field {:floating-label-text "Title"
+                       :full-width true
                        :default-value title
                        :on-change #(swap! input assoc :title %2)}]
        [:br]
        [ui/text-field {:floating-label-text "Body"
                        :default-value body
+                       :full-width true
                        :multi-line true
                        :on-change #(swap! input assoc :body %2)}]
        [:br]
@@ -174,12 +187,14 @@
   (let [input (reagent/atom {})
         errors (reagent/atom {})]
     (fn []
-      [:div.form
+      [ui/paper {:style {:padding "10px"}}
        [ui/text-field {:floating-label-text "Title"
+                       :full-width true
                        :on-change #(swap! input assoc :title %2)
                        :error-text (:title errors)}]
        [:br]
        [ui/text-field {:floating-label-text "Body"
+                       :full-width true
                        :on-change #(swap! input assoc :body %2)
                        :error-text (:body errors)
                        :multi-line true}]
