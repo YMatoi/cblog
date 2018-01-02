@@ -1,11 +1,13 @@
 (ns cblog.core
+  (:gen-class)
   (:require [com.stuartsierra.component :as component]
             [clojure.tools.namespace.repl :refer (refresh)]
             [cblog.database :as database]
             [cblog.app :as app]
             [cblog.auth :as auth]
             [cblog.utils :as utils]
-            [cblog.server :as server]))
+            [cblog.server :as server]
+            [environ.core :refer [env]]))
 
 (defn create-system [config-options]
   (let [{:keys [port db-spec]} config-options]
@@ -31,4 +33,7 @@
   (utils/rollback (:db-spec config-options)))
 
 (defn -main []
-  (create-system config-options))
+  (let [config {:port (Long/parseLong (env :port))
+                :db-spec (env :db-spec)}]
+    (utils/migrate (:db-spec config))
+    (component/start (create-system config))))

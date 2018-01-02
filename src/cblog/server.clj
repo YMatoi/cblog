@@ -6,6 +6,7 @@
   component/Lifecycle
   (start [this]
     (println ";; Starting Server")
+    (println port)
     (if (:server this)
       this
       (assoc this :server (jetty/run-jetty (:app app) {:join? false :port port}))))

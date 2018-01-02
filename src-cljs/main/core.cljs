@@ -113,7 +113,7 @@
 (defn on-js-reload []
   (reagent/render-component [page] (.getElementById js/document "app")))
 
-(defn init []
+(defn ^:export init []
   (accountant/configure-navigation!
     {:nav-handler (fn [path]
                     (let [match (bidi/match-route app-routes path)
