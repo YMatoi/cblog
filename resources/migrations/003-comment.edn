@@ -1,7 +1,7 @@
 {:up ["create table comments (
       id varchar(36) primary key not null,
-      user_id varchar(64) references users(id),
-      article_id varchar(36) references articles(id) not null,
+      user_id varchar(64) references users(id) on delete cascade,
+      article_id varchar(36) references articles(id) on delete cascade not null,
       parent_id varchar(36),
       body text not null,
       created_at bigint not null,
