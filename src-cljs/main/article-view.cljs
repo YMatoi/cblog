@@ -31,7 +31,7 @@
                                                                     :subtitle (:user_id c)}]])))))
     (fn []
       [:div
-       [:div.input
+       [:div.input {:hidden (if (nil? (storage/get-user-id)) true false)}
         [ui/text-field {:floating-label-text "Comment"
                         :on-change #(swap! input assoc :body %2)}]
         [ui/raised-button {:label "Add Comment"
