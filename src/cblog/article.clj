@@ -23,7 +23,10 @@
           [s/max-count 10000]]})
 
 (defhandler articles-list [req]
-  (response/ok (dao/articles-list (:database req) nil)))
+  (let [params (get-in req [:query-params])]
+    (if-let [user-id (params "user-id")]
+      (response/ok (dao/articles-list (:database req) [:= :user_id user-id]))
+      (response/ok (dao/articles-list (:database req) nil)))))
 
 (defhandler article-create [req {:auth? true}]
   (if-let [user-id (:user (:identity req))]

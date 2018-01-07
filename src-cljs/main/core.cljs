@@ -16,6 +16,8 @@
             [main.article-view :as article-view]
             [main.article-update :as article-update]
             [main.article-create :as article-create]
+            [main.users :as users]
+            [main.user-view :as user-view]
             [main.storage :as storage]))
 
 (enable-console-print!)
@@ -60,18 +62,10 @@
   (article-create/component app-routes))
 
 (defmethod page-contents :users []
-  (fn []
-    [:span
-     [:h1 "users"]]))
+  (users/component app-routes))
 
 (defmethod page-contents :user-view []
-  (let [routing-data (session/get :route)
-        item (get-in routing-data [:route-params :id])
-        articles (reagent/atom [:div.article])]
-    (fn []
-      (when (<= (count @articles) 1)
-        (println "hote"))
-      @articles)))
+  (user-view/component app-routes))
 
 (defmethod page-contents :default []
   (fn []
@@ -94,7 +88,8 @@
 
 (defn page []
   (fn []
-    (let [page (:current-page (session/get :route))]
+    (let [page (:current-page (session/get :route))
+          menu-open (reagent/atom false)]
       [ui/mui-theme-provider
        {:mui-theme (get-mui-theme)}
        [:div

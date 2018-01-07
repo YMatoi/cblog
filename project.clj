@@ -27,7 +27,8 @@
                  [venantius/accountant "0.2.3"]
                  [cljs-http "0.1.44"]]
   :plugins [[lein-cljsbuild "1.1.7"]]
-  :cljsbuild {:builds [{:source-paths ["src-cljs"]
+  :cljsbuild {:builds [{:id "min"
+                        :source-paths ["src-cljs"]
                         :compiler
                         {:output-to "resources/public/js/main.js"
                          :optimizations :advanced

@@ -24,8 +24,6 @@
               body (get-in response [:body :response])]
           (cond
             (= 200 status) (doseq [c body]
-                             (println (:body c))
-                             (println (:user_id c))
                              (swap! comments conj [ui/card
                                                    [ui/card-header {:title (:body c)
                                                                     :subtitle (:user_id c)}]])))))
