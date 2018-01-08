@@ -19,10 +19,5 @@
                                                     :subtitle (:user_id article)}]]]))))
     (fn []
       [:div
-       (if (nil? (storage/get-token))
-         [:div]
-         [ui/raised-button {:label "Create"
-                            :primary true
-                            :href (bidi/path-for app-routes :article-create)}])
        @articles])))
 

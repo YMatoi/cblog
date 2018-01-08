@@ -93,12 +93,25 @@
       [ui/mui-theme-provider
        {:mui-theme (get-mui-theme)}
        [:div
-        [ui/app-bar {:title (storage/get-user-id)
+        [ui/app-bar {:title page
                      :style {:max-width "800px"
                              :margin-left "auto"
                              :margin-right "auto"}
                      :class-name "header"
-                     :icon-element-left (reagent/as-element [ui/icon-button {:tooltip "Home" :href (bidi/path-for app-routes :index)} (ic/action-home)])
+                     :icon-element-left (reagent/as-element [ui/icon-menu {:icon-button-element (ic/navigation-more-vert)}
+                                                             (when (not (nil? (storage/get-user-id)))
+                                                             [ui/menu-item {:primary-text "HOME"
+                                                                            :on-click #(set! (.-location js/document) (bidi/path-for app-routes :user-view :id (storage/get-user-id)))}])
+                                                             (when (not (nil? (storage/get-user-id)))
+                                                             [ui/menu-item {:primary-text "Create Article"
+                                                                            :on-click #(set! (.-location js/document) (bidi/path-for app-routes :article-create))}])
+                                                             [ui/menu-item {:primary-text "Articles List"
+                                                                            :on-click #(set! (.-location js/document) (bidi/path-for app-routes :articles))}]
+                                                             [ui/menu-item {:primary-text "Users List"
+                                                                            :on-click #(set! (.-location js/document) (bidi/path-for app-routes :users))}]])
+                     :icon-style-left {:margin-top "auto"
+                                       :margin-bottom "auto"}
+                     ;:icon-element-left (reagent/as-element [ui/icon-button {:tooltip "Home" :href (bidi/path-for app-routes :index)} (ic/action-home)])
                      :icon-element-right (reagent/as-element [right-menu])
                      :icon-style-right {:margin-top "auto"
                                         :margin-bottom "auto"}}]
