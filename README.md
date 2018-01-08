@@ -5,7 +5,7 @@ A Clojure library designed to ... well, that part is up to you.
 ## Usage
 
 ```
-docker-compose up -d
+docker-compose up -d --build
 ```
 access localhost:8080
 
